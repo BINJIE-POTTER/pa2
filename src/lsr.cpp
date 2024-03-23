@@ -1,3 +1,13 @@
+/**
+ * @file link_state_routing_simulation.cpp
+ * @brief Simulation of Link State Routing (LSR) protocol for network routing.
+ *
+ * Implements a basic simulation of the Link State Routing protocol. The program reads network topology,
+ * messages, and possible changes to the topology from files, computes routing paths using Dijkstra's algorithm,
+ * and outputs the routing paths and messages traversal details. It demonstrates the dynamic adjustment of
+ * routing paths in response to changes in network topology.
+ */
+
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -8,19 +18,43 @@
 
 using namespace std;
 
+/**
+ * @struct Link
+ * @brief Represents a link between two network nodes.
+ *
+ * This struct holds information about a link in the network, including
+ * the IDs of the connected nodes and the cost of the path between them.
+ */
 struct Link {
     int node1;
     int node2;
     int cost;
 };
 
+/**
+ * @struct Message
+ * @brief Represents a message to be routed through the network.
+ *
+ * This struct holds information about a message that needs to be sent from a source node
+ * to a destination node in the network. It includes the IDs of the source and destination nodes,
+ * as well as the content of the message itself.
+ */
 struct Message {
     int source;
     int destination;
     string content;
 };
 
-// parse the topology file and store links in a vector
+/**
+ * @brief Parses the topology file to create a vector of Link structures.
+ *
+ * Reads a file specifying the network topology, with each line representing a link between two nodes
+ * and the associated cost. Creates a vector of Link structures to represent the network topology for
+ * use in routing simulations.
+ *
+ * @param filename The path to the topology file.
+ * @return Vector of Link structures representing the network's links and their costs.
+ */
 vector<Link> parseTopologyFile(const string& filename) {
     vector<Link> links;
     ifstream file(filename);
@@ -39,7 +73,16 @@ vector<Link> parseTopologyFile(const string& filename) {
     return links;
 }
 
-// parse the message file and store messages in a vector
+/**
+ * @brief Parses the message file to create a vector of Message structures.
+ *
+ * Reads a file containing messages to be sent across the network. Each line specifies a message's
+ * source node, destination node, and content. Creates a vector of Message structures for the simulation
+ * to process and route.
+ *
+ * @param filename The path to the message file.
+ * @return Vector of Message structures representing the messages to be routed.
+ */
 vector<Message> parseMessageFile(const string& filename) {
     vector<Message> messages;
     ifstream file(filename);
@@ -60,7 +103,16 @@ vector<Message> parseMessageFile(const string& filename) {
     return messages;
 }
 
-// parse the changes file and store changes in a vector
+/**
+ * @brief Parses the changes file to create a vector of Link structures representing changes to the topology.
+ *
+ * Reads a file containing potential changes to the network topology, such as updated costs for existing links
+ * or the addition/removal of links. Creates a vector of Link structures representing these changes for the
+ * simulation to apply.
+ *
+ * @param filename The path to the changes file.
+ * @return Vector of Link structures representing changes to the network's topology.
+ */
 vector<Link> parseChangesFile(const string& filename) {
     vector<Link> changes;
     ifstream file(filename);
@@ -79,7 +131,19 @@ vector<Link> parseChangesFile(const string& filename) {
     return changes;
 }
 
-// Perform Link State Routing (LSR)
+/**
+ * @brief Executes the Link State Routing simulation.
+ *
+ * Orchestrates the entire simulation process, including parsing input files for network topology, messages,
+ * and topology changes. It computes routing paths using Dijkstra's algorithm and simulates the routing of
+ * messages according to these paths. Outputs the results to a specified file, detailing the paths taken
+ * for messages and the effects of any applied topology changes.
+ *
+ * @param topologyFile Path to the file containing the network topology.
+ * @param messageFile Path to the file containing messages to be routed.
+ * @param changesFile Path to the file containing changes to the network topology.
+ * @param outputFile Path to the file where the simulation results will be written.
+ */
 void lsr(const string& topologyFile, const string& messageFile, const string& changesFile, const string& outputFile) {
     vector<Link> topology = parseTopologyFile(topologyFile);
     vector<Message> messages = parseMessageFile(messageFile);
@@ -282,7 +346,17 @@ void lsr(const string& topologyFile, const string& messageFile, const string& ch
     }
 }
 
-
+/**
+ * @brief Entry point for the Link State Routing (LSR) simulation.
+ *
+ * Accepts command-line arguments for the simulation's configuration, including paths to the topology, message, 
+ * and changes files, with an optional output file path. If no output file is specified, "output.txt" is used by default.
+ * Executes the LSR simulation based on the provided files.
+ *
+ * @param argc Number of command-line arguments.
+ * @param argv Array containing the command-line arguments.
+ * @return Returns 0 on successful execution, 1 on incorrect usage.
+ */
 int main(int argc, char** argv) {
     if (argc != 4 && argc != 5) {
         cerr << "Usage: " << argv[0] << " <topologyFile> <messageFile> <changesFile> [<outputFile>]" << endl;

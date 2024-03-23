@@ -1,0 +1,121 @@
+\doxysection{Router Class Reference}
+\hypertarget{class_router}{}\label{class_router}\index{Router@{Router}}
+
+
+Represents a router in a network, managing a routing table for distance vector routing.  
+
+
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{class_router_ac46125b81f9434eb4c28c6cb7d7cfda4}{Router}} (int id, const std\+::set$<$ int $>$ \&nodes)
+\item 
+void \mbox{\hyperlink{class_router_a6b05a73c1bde4abbc7cc2774cdba7165}{add\+Route}} (int destination\+ID, int next\+Hop\+ID, int path\+Cost)
+\item 
+int \mbox{\hyperlink{class_router_a11253eceb9612a312010959fb2a23dec}{get\+Next\+Hop}} (int destination\+ID) const
+\item 
+int \mbox{\hyperlink{class_router_a0c5ca6d00b0b62f00a8902c926f09182}{get\+Path\+Cost}} (int destination\+ID) const
+\item 
+const std\+::map$<$ int, std\+::pair$<$ int, int $>$ $>$ \& \mbox{\hyperlink{class_router_af1cedaa14d9190033b1f8dccdb54cca9}{get\+Routing\+Table}} () const
+\item 
+const int \mbox{\hyperlink{class_router_a569ee6910c4f104b464f5f05fbc8620c}{get\+ID}} () const
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{class_router_ab54bccc4c3d7a1653c802f41d56a473b}\label{class_router_ab54bccc4c3d7a1653c802f41d56a473b} 
+int {\bfseries ID}
+\begin{DoxyCompactList}\small\item\em The unique identifier of the router. \end{DoxyCompactList}\item 
+\Hypertarget{class_router_a24e21fe12459835816fb4993ce912d25}\label{class_router_a24e21fe12459835816fb4993ce912d25} 
+\mbox{\hyperlink{class_routing_table}{Routing\+Table}} {\bfseries RT}
+\begin{DoxyCompactList}\small\item\em The routing table managed by the router. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Represents a router in a network, managing a routing table for distance vector routing. 
+
+This class encapsulates a network router\textquotesingle{}s functionalities, including maintaining a routing table, adding routes, and determining the next hop and path cost to various destinations within the network. It acts as an interface for interacting with the router\textquotesingle{}s routing table. 
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\Hypertarget{class_router_ac46125b81f9434eb4c28c6cb7d7cfda4}\label{class_router_ac46125b81f9434eb4c28c6cb7d7cfda4} 
+\index{Router@{Router}!Router@{Router}}
+\index{Router@{Router}!Router@{Router}}
+\doxysubsubsection{\texorpdfstring{Router()}{Router()}}
+{\footnotesize\ttfamily Router\+::\+Router (\begin{DoxyParamCaption}\item[{int}]{id,  }\item[{const std\+::set$<$ int $>$ \&}]{nodes }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Constructs a \doxylink{class_router}{Router} with a given ID and initializes its routing table. 
+\begin{DoxyParams}{Parameters}
+{\em id} & The unique identifier of the router. \\
+\hline
+{\em nodes} & A set containing the IDs of all nodes within the network. \\
+\hline
+\end{DoxyParams}
+
+
+\doxysubsection{Member Function Documentation}
+\Hypertarget{class_router_a6b05a73c1bde4abbc7cc2774cdba7165}\label{class_router_a6b05a73c1bde4abbc7cc2774cdba7165} 
+\index{Router@{Router}!addRoute@{addRoute}}
+\index{addRoute@{addRoute}!Router@{Router}}
+\doxysubsubsection{\texorpdfstring{addRoute()}{addRoute()}}
+{\footnotesize\ttfamily void Router\+::add\+Route (\begin{DoxyParamCaption}\item[{int}]{destination\+ID,  }\item[{int}]{next\+Hop\+ID,  }\item[{int}]{path\+Cost }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Adds or updates a route in the router\textquotesingle{}s routing table. 
+\begin{DoxyParams}{Parameters}
+{\em destination\+ID} & The ID of the destination node. \\
+\hline
+{\em next\+Hop\+ID} & The ID of the next hop node towards the destination. \\
+\hline
+{\em path\+Cost} & The cost of the path to the destination. \\
+\hline
+\end{DoxyParams}
+\Hypertarget{class_router_a569ee6910c4f104b464f5f05fbc8620c}\label{class_router_a569ee6910c4f104b464f5f05fbc8620c} 
+\index{Router@{Router}!getID@{getID}}
+\index{getID@{getID}!Router@{Router}}
+\doxysubsubsection{\texorpdfstring{getID()}{getID()}}
+{\footnotesize\ttfamily const int Router\+::get\+ID (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+Retrieves the router\textquotesingle{}s ID. \begin{DoxyReturn}{Returns}
+The ID of the router. 
+\end{DoxyReturn}
+\Hypertarget{class_router_a11253eceb9612a312010959fb2a23dec}\label{class_router_a11253eceb9612a312010959fb2a23dec} 
+\index{Router@{Router}!getNextHop@{getNextHop}}
+\index{getNextHop@{getNextHop}!Router@{Router}}
+\doxysubsubsection{\texorpdfstring{getNextHop()}{getNextHop()}}
+{\footnotesize\ttfamily int Router\+::get\+Next\+Hop (\begin{DoxyParamCaption}\item[{int}]{destination\+ID }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+Retrieves the next hop ID for a given destination from the router\textquotesingle{}s routing table. 
+\begin{DoxyParams}{Parameters}
+{\em destination\+ID} & The ID of the destination node. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+The ID of the next hop node towards the destination. 
+\end{DoxyReturn}
+\Hypertarget{class_router_a0c5ca6d00b0b62f00a8902c926f09182}\label{class_router_a0c5ca6d00b0b62f00a8902c926f09182} 
+\index{Router@{Router}!getPathCost@{getPathCost}}
+\index{getPathCost@{getPathCost}!Router@{Router}}
+\doxysubsubsection{\texorpdfstring{getPathCost()}{getPathCost()}}
+{\footnotesize\ttfamily int Router\+::get\+Path\+Cost (\begin{DoxyParamCaption}\item[{int}]{destination\+ID }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+Retrieves the path cost to a given destination from the router\textquotesingle{}s routing table. 
+\begin{DoxyParams}{Parameters}
+{\em destination\+ID} & The ID of the destination node. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+The cost of the path to the destination. 
+\end{DoxyReturn}
+\Hypertarget{class_router_af1cedaa14d9190033b1f8dccdb54cca9}\label{class_router_af1cedaa14d9190033b1f8dccdb54cca9} 
+\index{Router@{Router}!getRoutingTable@{getRoutingTable}}
+\index{getRoutingTable@{getRoutingTable}!Router@{Router}}
+\doxysubsubsection{\texorpdfstring{getRoutingTable()}{getRoutingTable()}}
+{\footnotesize\ttfamily const std\+::map$<$ int, std\+::pair$<$ int, int $>$ $>$ \& Router\+::get\+Routing\+Table (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+Gets the entire routing table of the router. \begin{DoxyReturn}{Returns}
+A constant reference to the router\textquotesingle{}s routing table. 
+\end{DoxyReturn}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+/\+Users/kevindeng/\+Desktop/\+ELEC331/pa2/src/distancevector.\+cpp\end{DoxyCompactItemize}

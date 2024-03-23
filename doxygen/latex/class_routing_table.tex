@@ -1,0 +1,123 @@
+\doxysection{Routing\+Table Class Reference}
+\hypertarget{class_routing_table}{}\label{class_routing_table}\index{RoutingTable@{RoutingTable}}
+
+
+Manages routing information for a router.  
+
+
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{class_routing_table_ae83b1e55a82cf2bd2a2b50bbb918b400}{Routing\+Table}} (int my\+ID, const std\+::set$<$ int $>$ \&nodes)
+\item 
+void \mbox{\hyperlink{class_routing_table_aec3bca38bfc750610b054f64b5f108e1}{add\+Route}} (int destination\+ID, int next\+Hop\+ID, int path\+Cost)
+\item 
+bool \mbox{\hyperlink{class_routing_table_aa6abb46a151a6deafea101c80b3d8504}{contains}} (int destination\+ID) const
+\item 
+int \mbox{\hyperlink{class_routing_table_a32edb911b4fec83a85afc94e02c2f14d}{get\+Next\+Hop}} (int destination\+ID) const
+\item 
+int \mbox{\hyperlink{class_routing_table_ad1a57b2507bae03d3882ee53fd3e1643}{get\+Path\+Cost}} (int destination\+ID) const
+\item 
+const std\+::map$<$ int, std\+::pair$<$ int, int $>$ $>$ \& \mbox{\hyperlink{class_routing_table_a15f4770cab986a01e0492ebaac318e08}{get\+Routing\+Table}} () const
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{class_routing_table_a5919a0b327efd6eea03a0bb0be760eec}\label{class_routing_table_a5919a0b327efd6eea03a0bb0be760eec} 
+std\+::map$<$ int, std\+::pair$<$ int, int $>$ $>$ {\bfseries table}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Manages routing information for a router. 
+
+The \doxylink{class_routing_table}{Routing\+Table} class stores and manages the routing information for a router, including the next hop and path cost for reaching other nodes in the network. It provides functionality to add routes, check if a route exists, and retrieve the next hop and path cost for a given destination. 
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\Hypertarget{class_routing_table_ae83b1e55a82cf2bd2a2b50bbb918b400}\label{class_routing_table_ae83b1e55a82cf2bd2a2b50bbb918b400} 
+\index{RoutingTable@{RoutingTable}!RoutingTable@{RoutingTable}}
+\index{RoutingTable@{RoutingTable}!RoutingTable@{RoutingTable}}
+\doxysubsubsection{\texorpdfstring{RoutingTable()}{RoutingTable()}}
+{\footnotesize\ttfamily Routing\+Table\+::\+Routing\+Table (\begin{DoxyParamCaption}\item[{int}]{my\+ID,  }\item[{const std\+::set$<$ int $>$ \&}]{nodes }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Constructs a \doxylink{class_routing_table}{Routing\+Table} for a specific router. Initializes routing table entries for all nodes in the network with default values. 
+\begin{DoxyParams}{Parameters}
+{\em my\+ID} & The ID of the router this table belongs to. \\
+\hline
+{\em nodes} & A set containing the IDs of all nodes in the network. \\
+\hline
+\end{DoxyParams}
+
+
+\doxysubsection{Member Function Documentation}
+\Hypertarget{class_routing_table_aec3bca38bfc750610b054f64b5f108e1}\label{class_routing_table_aec3bca38bfc750610b054f64b5f108e1} 
+\index{RoutingTable@{RoutingTable}!addRoute@{addRoute}}
+\index{addRoute@{addRoute}!RoutingTable@{RoutingTable}}
+\doxysubsubsection{\texorpdfstring{addRoute()}{addRoute()}}
+{\footnotesize\ttfamily void Routing\+Table\+::add\+Route (\begin{DoxyParamCaption}\item[{int}]{destination\+ID,  }\item[{int}]{next\+Hop\+ID,  }\item[{int}]{path\+Cost }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Adds or updates a route in the routing table. If the route already exists, it updates the next hop and path cost. 
+\begin{DoxyParams}{Parameters}
+{\em destination\+ID} & The destination node ID of the route. \\
+\hline
+{\em next\+Hop\+ID} & The next hop node ID towards the destination. \\
+\hline
+{\em path\+Cost} & The cost of the path to the destination. \\
+\hline
+\end{DoxyParams}
+\Hypertarget{class_routing_table_aa6abb46a151a6deafea101c80b3d8504}\label{class_routing_table_aa6abb46a151a6deafea101c80b3d8504} 
+\index{RoutingTable@{RoutingTable}!contains@{contains}}
+\index{contains@{contains}!RoutingTable@{RoutingTable}}
+\doxysubsubsection{\texorpdfstring{contains()}{contains()}}
+{\footnotesize\ttfamily bool Routing\+Table\+::contains (\begin{DoxyParamCaption}\item[{int}]{destination\+ID }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+Checks if the table contains a route to the specified destination. 
+\begin{DoxyParams}{Parameters}
+{\em destination\+ID} & The ID of the destination node. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+True if the table contains a route to the destination, false otherwise. 
+\end{DoxyReturn}
+\Hypertarget{class_routing_table_a32edb911b4fec83a85afc94e02c2f14d}\label{class_routing_table_a32edb911b4fec83a85afc94e02c2f14d} 
+\index{RoutingTable@{RoutingTable}!getNextHop@{getNextHop}}
+\index{getNextHop@{getNextHop}!RoutingTable@{RoutingTable}}
+\doxysubsubsection{\texorpdfstring{getNextHop()}{getNextHop()}}
+{\footnotesize\ttfamily int Routing\+Table\+::get\+Next\+Hop (\begin{DoxyParamCaption}\item[{int}]{destination\+ID }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+Retrieves the next hop node ID for a given destination. 
+\begin{DoxyParams}{Parameters}
+{\em destination\+ID} & The ID of the destination node. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+The next hop node ID towards the destination, or -\/1 if no route exists. 
+\end{DoxyReturn}
+\Hypertarget{class_routing_table_ad1a57b2507bae03d3882ee53fd3e1643}\label{class_routing_table_ad1a57b2507bae03d3882ee53fd3e1643} 
+\index{RoutingTable@{RoutingTable}!getPathCost@{getPathCost}}
+\index{getPathCost@{getPathCost}!RoutingTable@{RoutingTable}}
+\doxysubsubsection{\texorpdfstring{getPathCost()}{getPathCost()}}
+{\footnotesize\ttfamily int Routing\+Table\+::get\+Path\+Cost (\begin{DoxyParamCaption}\item[{int}]{destination\+ID }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+Retrieves the path cost to a given destination. 
+\begin{DoxyParams}{Parameters}
+{\em destination\+ID} & The ID of the destination node. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+The cost of the path to the destination, or -\/1 if no route exists. 
+\end{DoxyReturn}
+\Hypertarget{class_routing_table_a15f4770cab986a01e0492ebaac318e08}\label{class_routing_table_a15f4770cab986a01e0492ebaac318e08} 
+\index{RoutingTable@{RoutingTable}!getRoutingTable@{getRoutingTable}}
+\index{getRoutingTable@{getRoutingTable}!RoutingTable@{RoutingTable}}
+\doxysubsubsection{\texorpdfstring{getRoutingTable()}{getRoutingTable()}}
+{\footnotesize\ttfamily const std\+::map$<$ int, std\+::pair$<$ int, int $>$ $>$ \& Routing\+Table\+::get\+Routing\+Table (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+Gets the entire routing table. \begin{DoxyReturn}{Returns}
+A const reference to the internal map representing the routing table. Each entry maps a destination node ID to a pair of next hop node ID and path cost. 
+\end{DoxyReturn}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+/\+Users/kevindeng/\+Desktop/\+ELEC331/pa2/src/distancevector.\+cpp\end{DoxyCompactItemize}
