@@ -19,10 +19,10 @@ SOURCES2=$(SRCDIR)/lsr.cpp
 all: $(TARGET1) $(TARGET2)
 
 $(TARGET1): $(SOURCE1)
-	$(CC) $(CFLAGS) $(SOURCE1) -o $(TARGET1)
+	$(CC) $(CFLAGS) $(SOURCES1) -o $(TARGET1)
 
 $(TARGET2): $(SOURCE2)
-	$(CC) $(CFLAGS) $(SOURCE2) -o $(TARGET2)
+	$(CC) $(CFLAGS) $(SOURCES2) -o $(TARGET2)
 
 # Define a clean rule
 clean:
