@@ -1,11 +1,13 @@
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <string>
 #include <vector>
 #include <utility>
 #include <climits>
 #include <set>
 #include <map>
+#include <ios>
 
 struct Link {
     int node1;
@@ -137,7 +139,7 @@ private:
 };
 
 Router&
-getRouterByID(std::vector<Router> &routers, int ID) {
+getRouterByID (std::vector<Router> &routers, int ID) {
 
     for (auto &router : routers) {
 
@@ -149,6 +151,19 @@ getRouterByID(std::vector<Router> &routers, int ID) {
 
 }
 
+void 
+removeLink(std::vector<Link> &links, const Link &linkToRemove) {
+
+    auto it = std::remove_if(links.begin(), links.end(), [&linkToRemove](const Link &link) {
+                                return (link.node1 == linkToRemove.node1 && link.node2 == linkToRemove.node2) ||
+                                       (link.node1 == linkToRemove.node2 && link.node2 == linkToRemove.node1);
+                            });
+
+    links.erase(it, links.end());
+
+}
+
+
 void
 initTopology (const std::string &topologyFile, std::vector<Link> &links, std::set<int> &nodes, std::vector<Router> &routers) {
 
@@ -159,8 +174,6 @@ initTopology (const std::string &topologyFile, std::vector<Link> &links, std::se
         exit(EXIT_FAILURE);
     }
 
-    std::cout << "topology file opened\n" << std::endl;
-
     // read all links from the topology file into a vector
     int node1, node2, pathCost;
     while (file >> node1 >> node2 >> pathCost) {
@@ -168,8 +181,6 @@ initTopology (const std::string &topologyFile, std::vector<Link> &links, std::se
         nodes.insert(node1);
         nodes.insert(node2);
     }
-
-    std::cout << "links are added\n" << std::endl;
 
     file.close();
 
@@ -180,15 +191,65 @@ initTopology (const std::string &topologyFile, std::vector<Link> &links, std::se
 
     }
 
-    std::cout << "forwarding tables initialized\n" << std::endl;
-
     // add direct link(s) to the involved routers
     for (const auto &link : links) {
         getRouterByID(routers, link.node1).addRoute(link.node2, link.node2, link.pathCost);
         getRouterByID(routers, link.node2).addRoute(link.node1, link.node1, link.pathCost);
     }
 
-    std::cout << "initial links are added\n" << std::endl;
+}
+
+void
+readChangesFile (const std::string &changesFile, std::vector<Link> &changes, std::set<int> &nodes) {
+
+    std::ifstream file(changesFile);
+
+    if (!file.is_open()) {
+        std::cerr << "Cannot open changes file: " << changesFile << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    int node1, node2, pathCost;
+    while (file >> node1 >> node2 >> pathCost) {
+
+        changes.push_back({node1, node2, pathCost});
+      
+    }
+
+    file.close();
+
+}
+
+void
+applyChange(const Link &change, std::vector<Router> &routers, std::set<int> &nodes, std::vector<Link> &links) {
+
+    nodes.insert(change.node1);
+    nodes.insert(change.node2);
+
+    if (change.pathCost == -999) {
+
+        removeLink(links, change);
+
+    } else {
+
+        links.push_back({change.node1, change.node2, change.pathCost});
+
+    }
+
+    routers.clear();
+
+    for (const int &id : nodes) {
+
+        routers.emplace_back(id, nodes);
+
+    }
+
+    for (const auto &link : links) {
+
+        getRouterByID(routers, link.node1).addRoute(link.node2, link.node2, link.pathCost);
+        getRouterByID(routers, link.node2).addRoute(link.node1, link.node1, link.pathCost);
+
+    }
 
 }
 
@@ -207,24 +268,24 @@ doBellmanFordAlg (std::vector<Router> &routers, const std::set<int> &nodes, cons
 
                 int curPathCost = router.getPathCost(destinationID);
 
-                //int newPathCost;
                 int newNextHop = -1;
 
                 for (const auto &link : links) {
 
                     int neighbourID = (link.node1 == router.getID()) ? link.node2 : (link.node2 == router.getID()) ? link.node1 : -1;
 
-                    if (neighbourID == -1 || neighbourID == destinationID) continue;
-                    if (getRouterByID(routers, neighbourID).getNextHop(destinationID) == router.getID()) continue;
+                    if (neighbourID == -1 || neighbourID == destinationID) continue; // only get related link
+                    if (getRouterByID(routers, neighbourID).getNextHop(destinationID) == router.getID()) continue; // split horizon
                     
                     int NeighbourPathCost = router.getPathCost(neighbourID);
                     int NeighbourToDestPathCost = getRouterByID(routers, neighbourID).getPathCost(destinationID);
 
-                    if (NeighbourPathCost + NeighbourToDestPathCost < curPathCost) {
+                    if ((NeighbourPathCost + NeighbourToDestPathCost < curPathCost) || 
+                        (NeighbourPathCost + NeighbourToDestPathCost == curPathCost && neighbourID < newNextHop)) {
 
                         curPathCost = NeighbourPathCost + NeighbourToDestPathCost;
                         newNextHop = neighbourID;
-                        
+
                         router.addRoute(destinationID, newNextHop, curPathCost);
                         updated = true;
 
@@ -243,7 +304,7 @@ doBellmanFordAlg (std::vector<Router> &routers, const std::set<int> &nodes, cons
 void
 writeFT (const std::string outputFile, const std::vector<Router> &routers) {
 
-    std::ofstream outFile(outputFile);
+    std::ofstream outFile(outputFile, std::ios::app);
     
     if (!outFile.is_open()) {
         std::cerr << "Cannot open output file: " << outputFile << std::endl;
@@ -270,25 +331,126 @@ writeFT (const std::string outputFile, const std::vector<Router> &routers) {
 }
 
 void
+readMessagesFile (const std::string messageFile, std::vector<Message> &messages) {
+
+    std::ifstream file(messageFile);
+
+    if (!file.is_open()) {
+        std::cerr << "Cannot open messages file: " << messageFile << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    std::string line;
+    while (std::getline(file, line)) {
+
+        std::istringstream iss(line);
+        int sourceID, destinationID;
+        std::string original, message;
+
+        iss >> sourceID >> destinationID;
+        std::getline(iss, original);
+
+        message = original.substr(original.find_first_not_of(" "));
+
+        messages.push_back({sourceID, destinationID, message});
+
+    }
+
+    file.close();
+
+}
+
+void
+sendMessages (const std::string outputFile, std::vector<Router> &routers, const std::vector<Message> &messages) {
+
+    std::ofstream outFile(outputFile, std::ios::app);
+    
+    if (!outFile.is_open()) {
+        std::cerr << "Cannot open output file: " << outputFile << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    for (const auto &message : messages) {
+
+        std::string outMessage;
+
+        int pathCost = getRouterByID(routers, message.sourceID).getPathCost(message.destinationID);
+
+        if (pathCost == 9999) {
+
+            outMessage = "from " + std::to_string(message.sourceID) + " to " + std::to_string(message.destinationID) +
+                         " cost infinite hops unreachable message " + message.message;
+
+            outFile << outMessage << "\n";
+            outFile << "\n";
+
+            continue;
+
+        }
+
+        int currentID = message.sourceID;
+
+        outMessage = "from " + std::to_string(message.sourceID) + " to " + std::to_string(message.destinationID) +
+                     " cost " + std::to_string(pathCost) + " hops ";
+
+        while (currentID != message.destinationID) {
+
+            outMessage += std::to_string(currentID) + " ";
+
+            currentID = getRouterByID(routers, currentID).getNextHop(message.destinationID);
+
+        }
+
+        outMessage += "message " + message.message;
+
+        outFile << outMessage << "\n";
+        outFile << "\n";
+
+    }
+
+    outFile.close();
+
+}
+
+void
 dvr (const std::string topologyFile, const std::string messageFile, const std::string changesFile, const std::string outputFile) {
 
     std::vector<Link> links;
-    std::vector<Link> linkChanges;
+    std::vector<Link> changes;
     std::vector<Message> messages;
     std::set<int> nodes;
     std::vector<Router> routers;
 
-    std::cout << "start calling initTopology()\n" << std::endl;
+    std::ofstream outFile(outputFile, std::ofstream::out);
+    if (!outFile.is_open()) {
+        std::cerr << "Cannot open output file: " << outputFile << std::endl;
+        exit(EXIT_FAILURE);
+    }
+    outFile.close();
 
     initTopology(topologyFile, links, nodes, routers);
 
-    std::cout << "start calling doBellmanFord()\n" << std::endl;
-
     doBellmanFordAlg(routers, nodes, links);
 
-    std::cout << "start calling writeFT()\n" << std::endl;
-
     writeFT(outputFile, routers);
+
+    readMessagesFile(messageFile, messages);
+
+    sendMessages(outputFile, routers, messages);
+
+    readChangesFile(changesFile, changes, nodes);
+
+    for (const auto &change : changes) {
+
+        applyChange(change, routers, nodes, links);
+
+        doBellmanFordAlg(routers, nodes, links);
+
+        writeFT(outputFile, routers);
+
+        sendMessages(outputFile, routers, messages);
+
+    }
 
 }
 
@@ -312,8 +474,6 @@ main(int argc, char** argv) {
     } else {
         outputFile = "output.txt";
     }
-
-    std::cout << "start opening dvr()\n" << std::endl;
 
     dvr(topologyFile, messageFile, changesFile, outputFile);
 
