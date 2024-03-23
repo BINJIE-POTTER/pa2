@@ -8,19 +8,29 @@ CFLAGS=-Wall -std=c++11
 SRCDIR=src
 
 # Define the name of the executable output
-TARGET=dvr
+TARGET1=dvr
+TARGET2=lsr
 
 # Define source files
-SOURCES=$(SRCDIR)/distancevector.cpp
+SOURCES1=$(SRCDIR)/distancevector.cpp
+SOURCES2=$(SRCDIR)/lsr.cpp
 
 # Define the build rule
-all:
-	$(CC) $(CFLAGS) $(SOURCES) -o $(TARGET)
+all: $(TARGET1) $(TARGET2)
+
+$(TARGET1): $(SOURCE1)
+	$(CC) $(CFLAGS) $(SOURCE1) -o $(TARGET1)
+
+$(TARGET2): $(SOURCE2)
+	$(CC) $(CFLAGS) $(SOURCE2) -o $(TARGET2)
 
 # Define a clean rule
 clean:
-	rm -f $(TARGET)
+	rm -f $(TARGET1) $(TARGET2)
 
 # Define a run rule (Assuming the executable requires 3 or 4 command line arguments)
-run: all
-	./$(TARGET) <topologyFile> <messageFile> <changesFile> [<outputFile>]
+run_dvr: $(TARGET1)
+	./$(TARGET1) <topologyFile> <messageFile> <changesFile> [<outputFile>]
+
+run_lsr: $(TARGET2)
+	./$(TARGET2) <topologyFile> <messageFile> <changesFile> [<outputFile>]
