@@ -436,8 +436,8 @@ doBellmanFordAlg (std::vector<Router> &routers, const std::set<int> &nodes, cons
 
                     int neighbourID = (link.node1 == router.getID()) ? link.node2 : (link.node2 == router.getID()) ? link.node1 : -1;
 
-                    if (neighbourID == -1 || neighbourID == destinationID) continue; // only get related link
-                    if (getRouterByID(routers, neighbourID).getNextHop(destinationID) == router.getID()) continue; // split horizon
+                    if (neighbourID == -1 || neighbourID == destinationID) continue;
+                    if (getRouterByID(routers, neighbourID).getNextHop(destinationID) == router.getID()) continue;
                     
                     int NeighbourPathCost = router.getPathCost(neighbourID);
                     int NeighbourToDestPathCost = getRouterByID(routers, neighbourID).getPathCost(destinationID);
@@ -489,7 +489,7 @@ writeFT (const std::string outputFile, const std::vector<Router> &routers) {
 
             int destination = entry.first;
             int nextHop = entry.second.first;
-            int pathCost = entry.second.second;
+            int pathCost = (entry.second.second == 9999) ? -999 : entry.second.second;
 
             outFile << destination << " " << nextHop << " " << pathCost << "\n";
         }
@@ -674,8 +674,6 @@ dvr (const std::string topologyFile, const std::string messageFile, const std::s
  */
 int 
 main(int argc, char** argv) {
-
-    std::cout << "entered main()\n" << std::endl;
 
     if (argc != 4 && argc != 5) {
         std::cerr << "Usage: " << argv[0] << " <topologyFile> <messageFile> <changesFile> [<outputFile>]" << std::endl;
