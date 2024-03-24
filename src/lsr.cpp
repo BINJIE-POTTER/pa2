@@ -1,155 +1,191 @@
-/**
- * @file link_state_routing_simulation.cpp
- * @brief Simulation of Link State Routing (LSR) protocol for network routing.
- *
- * Implements a basic simulation of the Link State Routing protocol. The program reads network topology,
- * messages, and possible changes to the topology from files, computes routing paths using Dijkstra's algorithm,
- * and outputs the routing paths and messages traversal details. It demonstrates the dynamic adjustment of
- * routing paths in response to changes in network topology.
- */
-
 #include <iostream>
 #include <fstream>
+#include <ostream>
+#include <string>
 #include <vector>
 #include <sstream>
 #include <map>
 #include <limits>
-
+#include <climits>
+#include <set>
+#include <algorithm>
 
 using namespace std;
 
-/**
- * @struct Link
- * @brief Represents a link between two network nodes.
- *
- * This struct holds information about a link in the network, including
- * the IDs of the connected nodes and the cost of the path between them.
- */
 struct Link {
-    int node1;
-    int node2;
+    string node1;
+    string node2;
     int cost;
 };
 
-/**
- * @struct Message
- * @brief Represents a message to be routed through the network.
- *
- * This struct holds information about a message that needs to be sent from a source node
- * to a destination node in the network. It includes the IDs of the source and destination nodes,
- * as well as the content of the message itself.
- */
 struct Message {
-    int source;
-    int destination;
+    string source;
+    string destination;
     string content;
 };
 
-/**
- * @brief Parses the topology file to create a vector of Link structures.
- *
- * Reads a file specifying the network topology, with each line representing a link between two nodes
- * and the associated cost. Creates a vector of Link structures to represent the network topology for
- * use in routing simulations.
- *
- * @param filename The path to the topology file.
- * @return Vector of Link structures representing the network's links and their costs.
- */
+// Parse the topology file and store links in a vector
 vector<Link> parseTopologyFile(const string& filename) {
     vector<Link> links;
     ifstream file(filename);
+
     if (file.is_open()) {
+
         string line;
+
         while (getline(file, line)) {
             stringstream ss(line);
-            int node1, node2, cost;
+            string node1, node2;
+            int cost;
             ss >> node1 >> node2 >> cost;
             links.push_back({node1, node2, cost});
         }
+
         file.close();
+
     } else {
         cerr << "Unable to open file: " << filename << endl;
     }
+
     return links;
+
 }
 
-/**
- * @brief Parses the message file to create a vector of Message structures.
- *
- * Reads a file containing messages to be sent across the network. Each line specifies a message's
- * source node, destination node, and content. Creates a vector of Message structures for the simulation
- * to process and route.
- *
- * @param filename The path to the message file.
- * @return Vector of Message structures representing the messages to be routed.
- */
+// Parse the message file and store messages in a vector
 vector<Message> parseMessageFile(const string& filename) {
     vector<Message> messages;
     ifstream file(filename);
+
     if (file.is_open()) {
+
         string line;
+
         while (getline(file, line)) {
+
             stringstream ss(line);
-            int source, destination;
-            string content;
+            string source, destination, content;
             ss >> source >> destination;
             getline(ss, content);
             messages.push_back({source, destination, content});
+
         }
+
         file.close();
+
     } else {
         cerr << "Unable to open file: " << filename << endl;
     }
+
     return messages;
 }
 
-/**
- * @brief Parses the changes file to create a vector of Link structures representing changes to the topology.
- *
- * Reads a file containing potential changes to the network topology, such as updated costs for existing links
- * or the addition/removal of links. Creates a vector of Link structures representing these changes for the
- * simulation to apply.
- *
- * @param filename The path to the changes file.
- * @return Vector of Link structures representing changes to the network's topology.
- */
+// Parse the changes file and store changes in a vector
 vector<Link> parseChangesFile(const string& filename) {
     vector<Link> changes;
     ifstream file(filename);
+
     if (file.is_open()) {
+
         string line;
+
         while (getline(file, line)) {
+
             stringstream ss(line);
-            int node1, node2, cost;
+            string node1, node2;
+            int cost;
             ss >> node1 >> node2 >> cost;
             changes.push_back({node1, node2, cost});
+
         }
+
         file.close();
+
     } else {
         cerr << "Unable to open file: " << filename << endl;
     }
+
     return changes;
 }
 
-/**
- * @brief Executes the Link State Routing simulation.
- *
- * Orchestrates the entire simulation process, including parsing input files for network topology, messages,
- * and topology changes. It computes routing paths using Dijkstra's algorithm and simulates the routing of
- * messages according to these paths. Outputs the results to a specified file, detailing the paths taken
- * for messages and the effects of any applied topology changes.
- *
- * @param topologyFile Path to the file containing the network topology.
- * @param messageFile Path to the file containing messages to be routed.
- * @param changesFile Path to the file containing changes to the network topology.
- * @param outputFile Path to the file where the simulation results will be written.
- */
+// Perform Dijsktra algorithm
+void updateRoutingTables(map<string, map<string, int>>& lsdb, map<string, map<string, pair<string, int>>>& routingTables) {
+
+    for (const auto& entry : lsdb) {
+
+        string source = entry.first;
+
+        // Initialize distances to infinity for all nodes except the source
+        map<string, int> distance;
+
+        for (const auto& pair : lsdb) {
+
+            string node = pair.first;
+            distance[node] = (node == source) ? 0 : INT_MAX;
+
+        }
+
+        // Use a set to keep track of visited nodes
+        set<string> visited;
+
+        while (visited.size() < lsdb.size()) {
+
+            // Find the node with the minimum distance from the source among unvisited nodes
+            string current_node;
+            int min_distance = INT_MAX;
+
+            for (const auto& pair : distance) {
+
+                string node = pair.first;
+
+                if (visited.find(node) == visited.end() && pair.second < min_distance) {
+                    min_distance = pair.second;
+                    current_node = node;
+                }
+
+            }
+
+            // Add the current node to visited set
+            visited.insert(current_node);
+
+            // Update distances for all neighbors of the current node
+            for (const auto& neighbor : lsdb[current_node]) {
+
+                string neighbor_node = neighbor.first;
+                int neighbor_distance = neighbor.second;
+
+                if (distance[current_node] != INT_MAX && distance[current_node] + neighbor_distance < distance[neighbor_node]) {
+
+                    distance[neighbor_node] = distance[current_node] + neighbor_distance;
+                    routingTables[source][neighbor_node] = make_pair(current_node, distance[neighbor_node]);
+
+                } else if (distance[current_node] != INT_MAX && distance[current_node] + neighbor_distance == distance[neighbor_node]) {
+
+                    // Check if there's a shorter path to neighbor_node
+                    if (routingTables[source][neighbor_node].second > distance[neighbor_node]) {
+
+                        routingTables[source][neighbor_node] = make_pair(current_node, distance[neighbor_node]);
+
+                    }
+
+                }
+
+            }
+
+        }
+
+    }
+    
+}
+
+
+// Perform Link State Routing (LSR)
 void lsr(const string& topologyFile, const string& messageFile, const string& changesFile, const string& outputFile) {
+
     vector<Link> topology = parseTopologyFile(topologyFile);
     vector<Message> messages = parseMessageFile(messageFile);
     vector<Link> changes = parseChangesFile(changesFile);
 
-    cout << "Topology File Contents:" << endl;
+    /* cout << "Topology File Contents:" << endl;
     for (const auto& link : topology) {
         cout << link.node1 << " " << link.node2 << " " << link.cost << endl;
     }
@@ -165,198 +201,180 @@ void lsr(const string& topologyFile, const string& messageFile, const string& ch
     for (const auto& change : changes) {
         cout << change.node1 << " " << change.node2 << " " << change.cost << endl;
     }
-    cout << endl;
+    cout << endl; */
     
-    map<int, map<int, int>> lsdb; // Link State Database: key(node) -> value(neighbor, cost)
+    map<string, map<string, int>> lsdb; // Link State Database: key(node) -> value(neighbor, cost)
     for (const Link& link : topology) {
         lsdb[link.node1][link.node2] = link.cost;
         lsdb[link.node2][link.node1] = link.cost; // Add reverse link for undirected graph
     }
 
-    map<int, map<int, pair<int, int>>> routingTables; // Routing Tables: key(node) -> value(destination, (nextHop, cost))
+    // Routing Tables: key(node) -> value(destination, (nextHop, cost))
+    map<string, map<string, pair<string, int>>> routingTables;
+
+    // Fill routingTables based on LSDB
     for (const auto& entry : lsdb) {
-        int node = entry.first;
+
+        string node = entry.first;
         routingTables[node][node] = make_pair(node, 0); // Node's entry for itself
+
         for (const auto& neighbor : entry.second) {
             routingTables[node][neighbor.first] = make_pair(neighbor.first, neighbor.second);
         }
+
     }
 
-    // Dijkstra's algorithm to compute shortest paths
+    // Set default cost for nodes not present in LSDB
     for (const auto& entry : lsdb) {
-        int source = entry.first;
-        map<int, int> distance; // Key: destination, Value: distance
-        map<int, bool> visited; // Key: node, Value: visited
 
-        for (const auto& neighbor : entry.second) {
-            distance[neighbor.first] = neighbor.second;
-            visited[neighbor.first] = false;
+        string node = entry.first;
+
+        for (const auto& pair : lsdb) {
+
+            string neighbor = pair.first;
+            if (node != neighbor && routingTables[node].find(neighbor) == routingTables[node].end()) {
+                routingTables[node][neighbor] = make_pair("", INT_MAX); // Set cost to infinity
+            }
+
         }
 
-        distance[source] = 0;
-        visited[source] = true;
-
-        for (size_t i = 0; i < lsdb.size(); ++i) {
-            int minDistance = numeric_limits<int>::max();
-            int minNode = -1;
-
-            for (const auto& neighbor : entry.second) {
-                int node = neighbor.first;
-                if (!visited[node] && distance[node] < minDistance) {
-                    minDistance = distance[node];
-                    minNode = node;
-                }
-            }
-
-            if (minNode == -1) {
-                break;
-            }
-
-            visited[minNode] = true;
-
-            for (const auto& neighbor : lsdb[minNode]) {
-                int node = neighbor.first;
-                int cost = neighbor.second;
-                if (!visited[node] && minDistance != numeric_limits<int>::max() && 
-                    minDistance + cost < distance[node]) {
-                    distance[node] = minDistance + cost;
-                    routingTables[source][node] = make_pair(minNode, distance[node]);
-                }
-            }
-        }
     }
 
+    updateRoutingTables(lsdb, routingTables);
+
+    /* 
+
+    for (const auto& routingTable : routingTables) {
+        std::cout << "Routing table for node " << routingTable.first << ":\n";
+        for (const auto& entry : routingTable.second) {
+            std::cout << "" << entry.first << " " << entry.second.first << " " << entry.second.second << "\n";
+        }
+        std::cout << "\n";
+    }
+    
+    */
+    
     ofstream outfile(outputFile);
     if (outfile.is_open()) {
+
         for (const auto& routingTable : routingTables) {
-            int node = routingTable.first;
-            outfile << "Topology entries for node " << node << ":" << endl;
+
             for (const auto& entry : routingTable.second) {
-                int destination = entry.first;
-                int nextHop = entry.second.first;
-                int pathCost = entry.second.second;
-                outfile << destination << " " << nextHop << " " << pathCost << endl;
+                outfile << entry.first << " " << entry.second.first << " " << entry.second.second << "\n";
             }
-            outfile << endl;
-        }
+
+            outfile << "\n";
+
+        }  
 
         for (const auto& message : messages) {
-            outfile << "from " << message.source << " to " << message.destination << " cost ";
-            int totalCost = routingTables[message.source][message.destination].second;
-            vector<int> hops;
-            int dest = message.destination;
-            while (dest != routingTables[message.source][dest].first) {
-                hops.push_back(dest);
-                dest = routingTables[message.source][dest].first;
+
+            // Find shortest path from source to destination
+            string shortestPath;
+            int totalCost = 0; // Initialize total cost to zero
+
+            if (routingTables.find(message.source) != routingTables.end() && routingTables[message.source].find(message.destination) != routingTables[message.source].end()) {
+                
+                totalCost = routingTables[message.source][message.destination].second; // Use cost from routing table
+                string currentNode = message.destination; // Start from destination
+
+                while (currentNode != message.source) {
+                    if (currentNode != message.destination) {
+                        shortestPath = currentNode + " " + shortestPath;
+                    }
+                    currentNode = routingTables[message.source][currentNode].first;
+                }
             }
-            outfile << totalCost << " hops ";
-            for (int i = hops.size() - 1; i >= 0; --i) {
-                outfile << hops[i] << " ";
-            }
-            outfile << "message " << message.content << endl;
+
+            outfile << "from " << message.source << " to " << message.destination << " cost " << totalCost << " hops " << message.source << " " << shortestPath << message.content << "\n";
         }
 
-        if (!changes.empty()) {
-            outfile << "--- At this point, the 1st change is applied (and this line does not appear)" << endl;
-        }
+        outfile << "\n";
 
-        for (size_t i = 0; i < changes.size(); ++i) {
-            const auto& change = changes[i];
-            lsdb[change.node1][change.node2] = change.cost;
-            lsdb[change.node2][change.node1] = change.cost;
+        // Apply changes
+        for (const auto& change : changes) {
 
+            // Check if the link should be added or removed
+            auto it = find_if(topology.begin(), topology.end(), [&](const Link& l) { return l.node1 == change.node1 && l.node2 == change.node2; });
+            
+            if (it != topology.end()) {
+                // Link exists, remove it
+                topology.erase(it);
+            } else {
+                // Link does not exist, add it
+                topology.push_back(change);
+            }
+
+            // Update routing tables based on modified topology
+            lsdb.clear();
+            routingTables.clear();
+
+            for (const auto& link : topology) {
+                lsdb[link.node1][link.node2] = link.cost;
+                lsdb[link.node2][link.node1] = link.cost; // Add reverse link for undirected graph
+            }
+
+            // Add entry for each node to itself with distance 0
             for (const auto& entry : lsdb) {
-                int node = entry.first;
-                map<int, int> distance;
-                map<int, bool> visited;
-
-                for (const auto& neighbor : entry.second) {
-                    distance[neighbor.first] = neighbor.second;
-                    visited[neighbor.first] = false;
-                }
-
-                distance[node] = 0;
-                visited[node] = true;
-
-                for (size_t i = 0; i < lsdb.size(); ++i) {
-                    int minDistance = numeric_limits<int>::max();
-                    int minNode = -1;
-
-                    for (const auto& neighbor : entry.second) {
-                        int node = neighbor.first;
-                        if (!visited[node] && distance[node] < minDistance) {
-                            minDistance = distance[node];
-                            minNode = node;
-                        }
-                    }
-
-                    if (minNode == -1) {
-                        break;
-                    }
-
-                    visited[minNode] = true;
-
-                    for (const auto& neighbor : lsdb[minNode]) {
-                        int node = neighbor.first;
-                        int cost = neighbor.second;
-                        if (!visited[node] && minDistance != numeric_limits<int>::max() && 
-                            minDistance + cost < distance[node]) {
-                            distance[node] = minDistance + cost;
-                            routingTables[node][node] = make_pair(minNode, distance[node]);
-                        }
-                    }
-                }
+                string node = entry.first;
+                routingTables[node][node] = make_pair(node, 0); // Node's entry for itself
             }
 
-            for (const auto& routingTable : routingTables) {
-                int node = routingTable.first;
-                outfile << "Topology entries for node " << node << ":" << endl;
-                for (const auto& entry : routingTable.second) {
-                    int destination = entry.first;
-                    int nextHop = entry.second.first;
-                    int pathCost = entry.second.second;
-                    outfile << destination << " " << nextHop << " " << pathCost << endl;
+            // Update routing tables based on the modified topology
+            updateRoutingTables(lsdb, routingTables);
+
+            vector<string> nodeIds;
+
+            for (const auto& entry : routingTables) {
+                nodeIds.push_back(entry.first);
+            }
+            sort(nodeIds.begin(), nodeIds.end());
+
+            for (const auto& nodeId : nodeIds) {
+
+                for (const auto& entry : routingTables[nodeId]) {
+                    outfile << entry.first << " " << entry.second.first << " " << entry.second.second << "\n";
                 }
-                outfile << endl;
+
+                outfile << "\n";
             }
 
+            // Output messages based on the modified topology
             for (const auto& message : messages) {
-                outfile << "from " << message.source << " to " << message.destination << " cost ";
-                int totalCost = routingTables[message.source][message.destination].second;
-                vector<int> hops;
-                int dest = message.destination;
-                while (dest != routingTables[message.source][dest].first) {
-                    hops.push_back(dest);
-                    dest = routingTables[message.source][dest].first;
+
+                // Find shortest path from source to destination
+                string shortestPath;
+                int totalCost = 0; // Initialize total cost to zero
+
+                if (routingTables.find(message.source) != routingTables.end() && routingTables[message.source].find(message.destination) != routingTables[message.source].end()) {
+                    totalCost = routingTables[message.source][message.destination].second; // Use cost from routing table
+                    string currentNode = message.destination; // Start from destination
+
+                    while (currentNode != message.source) {
+
+                        if (currentNode != message.destination) {
+                            shortestPath = currentNode + " " + shortestPath;
+                        }
+
+                        currentNode = routingTables[message.source][currentNode].first;
+
+                    }
                 }
-                outfile << totalCost << " hops ";
-                for (int i = hops.size() - 1; i >= 0; --i) {
-                    outfile << hops[i] << " ";
-                }
-                outfile << "message " << message.content << endl;
+
+                outfile << "from " << message.source << " to " << message.destination << " cost " << totalCost << " hops " << message.source << " " << shortestPath << message.content << "\n";
+                outfile << endl;
+
             }
 
-            if (i < changes.size() - 1) {
-                outfile << "--- At this point, the " << (i + 2) << "nd change is applied (and this line does not appear)" << endl;
-            }
         }
+
         outfile.close();
     } else {
         cerr << "Unable to open output file." << endl;
     }
+
 }
 
-/**
- * @brief Entry point for the Link State Routing (LSR) simulation.
- *
- * Accepts command-line arguments for the simulation's configuration, including paths to the topology, message, 
- * and changes files, with an optional output file path. If no output file is specified, "output.txt" is used by default.
- * Executes the LSR simulation based on the provided files.
- *
- * @param argc Number of command-line arguments.
- * @param argv Array containing the command-line arguments.
- * @return Returns 0 on successful execution, 1 on incorrect usage.
- */
 int main(int argc, char** argv) {
     if (argc != 4 && argc != 5) {
         cerr << "Usage: " << argv[0] << " <topologyFile> <messageFile> <changesFile> [<outputFile>]" << endl;
@@ -377,5 +395,5 @@ int main(int argc, char** argv) {
     lsr(topologyFile, messageFile, changesFile, outputFile);
 
     return 0;
-
 }
+
